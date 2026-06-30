@@ -47,7 +47,7 @@ def verificar_servidor() -> bool:
             return True
         elif estado == "qr_pendiente":
             print(f"{AMARILLO}⚠ WhatsApp esperando QR. Abrí http://localhost:3001/qr "
-                  f"o mirá la consola del servidor para escanearlo.{RESET}")
+                f"o mirá la consola del servidor para escanearlo.{RESET}")
         else:
             print(f"{ROJO}✗ Servidor en estado: {estado}{RESET}")
         return False

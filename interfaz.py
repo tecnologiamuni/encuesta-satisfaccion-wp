@@ -120,17 +120,17 @@ class App(tk.Tk):
             justify="left",
         ).pack(anchor="w", pady=(0, 16))
 
+        self.var_dni      = tk.StringVar()
         self.var_nombre   = tk.StringVar()
         self.var_apellido = tk.StringVar()
-        self.var_dni      = tk.StringVar()
         self.var_telefono = tk.StringVar()
         self._paciente_encontrado = None
         self._paciente_editando = None
         self._evitar_busqueda = False
 
+        self._campo(parent, "DNI *", self.var_dni, hint="Ej: 12345678")
         self._entry_nombre   = self._campo(parent, "Nombre *", self.var_nombre)
         self._entry_apellido = self._campo(parent, "Apellido *", self.var_apellido)
-        self._campo(parent, "DNI *", self.var_dni, hint="Ej: 12345678")
         self._campo(parent, "Teléfono celular *", self.var_telefono, hint="Ej: 11 2345-6789")
 
         self._dni_trace_id = None
@@ -417,7 +417,7 @@ class App(tk.Tk):
             return
         if self._dni_trace_id:
             self.after_cancel(self._dni_trace_id)
-        self._dni_trace_id = self.after(400, self._buscar_por_dni)
+        self._dni_trace_id = self.after(100, self._buscar_por_dni)
 
     def _buscar_por_dni(self):
         dni = self.var_dni.get().strip()
