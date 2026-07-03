@@ -86,14 +86,35 @@ def enviar_whatsapp(telefono: str, mensaje: str) -> bool:
 
 # ── Lógica de envío ───────────────────────────────────────────────────────────
 
-def armar_mensaje(nombre: str) -> str:
-    return (
-        f"Hola {nombre} 👋, esperamos que te encuentres mejor.\n\n"
+MENSAJES = [
+    lambda n: (
+        f"Hola {n} 👋, esperamos que te encuentres mejor.\n\n"
         f"Nos gustaría conocer tu opinión sobre la atención que recibiste "
         f"en la guardia. ¿Podrías completar esta breve encuesta?\n\n"
         f"👉 {LINK_ENCUESTA}\n\n"
         f"¡Muchas gracias! Tu opinión nos ayuda a mejorar 🙏"
-    )
+    ),
+    lambda n: (
+        f"¡Hola {n}! 🙌 Esperamos que ya estés mucho mejor.\n\n"
+        f"Queremos saber cómo fue tu experiencia en la guardia. "
+        f"Te agradeceríamos si completás esta encuesta breve:\n\n"
+        f"👉 {LINK_ENCUESTA}\n\n"
+        f" Gracias por ayudarnos a seguir mejorando 🙌"
+    ),
+    lambda n: (
+        f"Hola {n} 😊, ¿cómo estás?\n\n"
+        f"Desde la guardia médica queremos conocer tu opinión "
+        f"sobre la atención que recibiste. ¿Nos ayudás con esta encuesta?\n\n"
+        f"👉 {LINK_ENCUESTA}\n\n"
+        f"¡Muchas gracias por tu tiempo! 🙏"
+    ),
+]
+
+
+def armar_mensaje(nombre: str) -> str:
+    dia = datetime.now().timetuple().tm_yday
+    idx = dia % len(MENSAJES)
+    return MENSAJES[idx](nombre)
 
 
 def enviar_a_todos():
