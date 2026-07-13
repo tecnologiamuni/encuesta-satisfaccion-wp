@@ -23,6 +23,21 @@ const app = express();
 app.use(express.json());
 
 const PORT = 3001;
+const HOST = "127.0.0.1"; // solo accesible desde esta misma PC, no desde la red del hospital
+
+// ── Manejo de errores no capturados ──────────────────────────────────────────
+// Si Puppeteer/Chrome muere de forma inesperada (memoria, crash del navegador),
+// preferimos loguear y salir con código de error, para que el watchdog
+// (INICIAR_WHATSAPP_SERVER.bat) detecte el cierre y reinicie el proceso limpio,
+// en vez de dejarlo colgado en un estado inconsistente.
+process.on("uncaughtException", (err) => {
+  console.error(`\n💥 [${new Date().toISOString()}] Excepción no capturada:`, err);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error(`\n💥 [${new Date().toISOString()}] Promesa rechazada sin manejar:`, reason);
+  process.exit(1);
+});
 
 // ── Estado global ─────────────────────────────────────────────────────────────
 let estado = "inicializando"; // inicializando | qr_pendiente | conectado | desconectado
@@ -155,8 +170,8 @@ app.post("/enviar", async (req, res) => {
 });
 
 // ── Arrancar ──────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor WhatsApp escuchando en http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`\n🚀 Servidor WhatsApp escuchando en http://${HOST}:${PORT}`);
   console.log(`   GET  /estado  → estado de la conexión`);
   console.log(`   GET  /qr      → QR para escanear`);
   console.log(`   POST /enviar  → { telefono, mensaje }\n`);
