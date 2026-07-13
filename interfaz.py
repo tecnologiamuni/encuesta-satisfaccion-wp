@@ -528,8 +528,16 @@ class App(tk.Tk):
                 except Exception:
                     fecha_txt = fecha
 
-            estado = "✓ Enviado" if p["mensaje_enviado"] else "⏳ Pendiente"
-            tag    = "enviado"   if p["mensaje_enviado"] else "pendiente"
+            n_env = p.get("mensajes_enviados", 0) or 0
+            if n_env == 0:
+                estado, tag = "⏳ 0/3 pendiente", "pendiente"
+            else:
+                pos_ciclo = ((n_env - 1) % 3) + 1  # 1, 2 o 3 dentro de la vuelta actual
+                vuelta = ((n_env - 1) // 3) + 1     # nº de vuelta del ciclo (1ª, 2ª, ...)
+                if pos_ciclo == 3:
+                    estado, tag = f"✓ {n_env} enviados (vuelta {vuelta} completa)", "enviado"
+                else:
+                    estado, tag = f"⏳ {pos_ciclo}/3 (vuelta {vuelta}) · {n_env} enviados en total", "pendiente"
 
             self.tree.insert("", "end", values=(
                 p["id"],
@@ -671,11 +679,11 @@ class App(tk.Tk):
 
     def _ejecutar_envio(self, modo_cron=False):
         def _tarea():
+            import io, sys, re, traceback
+            old_stdout = sys.stdout
             try:
                 from enviar_encuestas import enviar_a_todos
-                import io, sys, re
                 buf = io.StringIO()
-                old_stdout = sys.stdout
                 sys.stdout = buf
                 enviar_a_todos()
                 sys.stdout = old_stdout
@@ -686,6 +694,12 @@ class App(tk.Tk):
                 self.after(0, lambda: self._status(f"✓  {msg}"))
                 self.after(0, self._cargar_tabla)
             except Exception as e:
+                sys.stdout = old_stdout
+                try:
+                    from enviar_encuestas import log_a_archivo
+                    log_a_archivo(f"ERROR desde la interfaz (cron={modo_cron}):\n{traceback.format_exc()}")
+                except Exception:
+                    pass
                 msg = str(e)
                 self.after(0, lambda: self._status(f"✗  Error en envío: {msg}", error=True))
                 self.after(0, lambda: messagebox.showerror("Error de envío", msg))
